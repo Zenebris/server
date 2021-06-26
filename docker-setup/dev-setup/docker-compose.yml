@@ -1,0 +1,29 @@
+version: "2"
+
+services:
+  postgre-db:
+    image: postgres
+    volumes:
+      - /zenebris/postgres/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: MNe&bRu!%d6HmLfAS7Aj
+      POSTGRES_USER: ZenebrisPostgres
+      POSTGRES_DB: Zenebris
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+
+  minio:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    command: server /data
+    volumes:
+      - /zenebris/minio/data:/data
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123

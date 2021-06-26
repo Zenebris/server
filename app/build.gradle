@@ -1,0 +1,40 @@
+plugins {
+    id "application"
+    id "io.freefair.lombok" version "6.0.0-m2"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Server
+    implementation "io.jooby:jooby-netty:2.9.6"
+
+    // JSON body de/encoder for jooby
+    implementation "io.jooby:jooby-jackson:2.9.6"
+
+    // Nice stuff
+    implementation "com.google.guava:guava:30.1.1-jre"
+
+    // Postgres connector for perfect sql connection
+    implementation 'org.postgresql:postgresql:42.2.22'
+
+    // SQL connection pool
+    implementation "com.zaxxer:HikariCP:4.0.3"
+
+    // Minio client for object storage
+    implementation 'io.minio:minio:8.2.2'
+
+    // Redis client
+    implementation 'org.redisson:redisson:3.15.6'
+
+    // Testing
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "io.jooby:jooby-test:2.9.6"
+}
+
+application {
+    mainClassName = 'net.zenebris.server.App'
+}

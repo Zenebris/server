@@ -1,0 +1,2 @@
+rootProject.name = 'Zenebris-Server'
+include('app')
