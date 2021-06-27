@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class UserControllerTest {
-    private final MockRouter router = new MockRouter(new App());
+    private final MockRouter router = new MockRouter(App.create());
 
     @Test
     public void testHandleuserLoginPost() {
@@ -21,7 +21,7 @@ public class UserControllerTest {
             Assert.assertEquals(StatusCode.NOT_IMPLEMENTED, response.getStatusCode());
         });
     }
-    
+
     @Test
     public void testHandleuserRegisterPost() {
         MockContext context = new MockContext();
@@ -32,5 +32,5 @@ public class UserControllerTest {
             Assert.assertEquals(StatusCode.NOT_IMPLEMENTED, response.getStatusCode());
         });
     }
-    
+
 }
