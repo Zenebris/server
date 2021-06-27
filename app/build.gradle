@@ -28,7 +28,12 @@ dependencies {
     implementation 'io.minio:minio:8.2.2'
 
     // Redis client
-    implementation 'org.redisson:redisson:3.15.6'
+    implementation 'io.lettuce:lettuce-core:6.1.3.RELEASE'
+
+    // Logging
+    implementation "ch.qos.logback:logback-classic:1.2.3"
+
+    implementation "org.jetbrains:annotations:21.0.1"
 
     // Testing
     testImplementation "junit:junit:4.13.2"
@@ -37,4 +42,9 @@ dependencies {
 
 application {
     mainClassName = 'net.zenebris.server.App'
+}
+
+
+test {
+    useJUnitPlatform()
 }

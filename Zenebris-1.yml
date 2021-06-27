@@ -1,0 +1,110 @@
+openapi: '3.0.2'
+info:
+  title: Zenebris api
+  version: '1.0'
+servers:
+  - url: https://api.zenebris.de/api/v1
+paths:
+  /user/register:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Register"
+      responses:
+        '200':
+          description: "Registered a new user successful"
+        default:
+          description: "Something else than 200 is an error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/login:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+      responses:
+        '200':
+          description: "Logged in successfull and returns the session token"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        default:
+          description: "The login was unsuccessfull"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /socket:
+    get:
+      parameters:
+        - in: query
+          name: X-Auth-Token
+          schema:
+            type: string
+      responses:
+        '101':
+          description: "Upgraded successfull"
+        default:
+          description: "Is an error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+            
+
+
+components:
+  schemas:
+    Token:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    Login:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    Register:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
