@@ -2,15 +2,32 @@ package net.zenebris.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.jooby.Jooby;
 import io.jooby.ServerOptions;
 import io.jooby.json.JacksonModule;
+import io.lettuce.core.RedisClient;
+import io.minio.MinioClient;
 import net.zenebris.server.controller.SocketController;
 import net.zenebris.server.controller.UserController;
 import net.zenebris.server.middleware.AuthMiddleware;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
+import java.util.Map;
 
 public class App extends Jooby {
-    public App() {
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
+    private final DataSource dataSource;
+    private final RedisClient redisClient;
+    private final MinioClient minioClient;
+
+    public App(DataSource dataSource, RedisClient redisClient, MinioClient minioClient) {
+        this.dataSource = dataSource;
+        this.redisClient = redisClient;
+        this.minioClient = minioClient;
         setServerOptions(new ServerOptions()
                 .setHttp2(true)
                 .setCompressionLevel(5)
@@ -35,6 +52,60 @@ public class App extends Jooby {
     }
 
     public static void main(String[] args) {
-        runApp(args, () -> new App());
+        runApp(args, App::create);
+    }
+
+    public static App create() {
+        return new App(getSqlDatasource(), getRedisClient(), getMinioClient());
+    }
+
+    private static DataSource getSqlDatasource() {
+        Map<String, String> env = getEnv();
+        String host = env.getOrDefault("ZENEBRIS_SQL_HOST", "localhost");
+        String db = env.getOrDefault("ZENEBRIS_SQL_DATABASE", "zenebris");
+        String user = env.getOrDefault("ZENEBRIS_SQL_USER", "ZenebrisPostgres");
+        String password = env.get("ZENEBRIS_SQL_PASSWORD");
+        if (password == null)
+            throw new IllegalStateException("Environment ZENEBRIS_SQL_PASSWORD must be defined.");
+
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:postgresql://" + host + "/" + db);
+        config.setUsername(user);
+        config.setPassword(password);
+        return new HikariDataSource(config);
+    }
+
+    private static RedisClient getRedisClient() {
+        Map<String, String> env = getEnv();
+        String host = env.getOrDefault("ZENEBRIS_REDIS_HOST", "localhost");
+        String database = env.getOrDefault("ZENEBRIS_REDIS_DATABASE", "0");
+
+        String uri = "redis://" + host + "/" + database;
+        logger.debug("Connecting redis to " + uri);
+        return RedisClient.create(uri);
+    }
+
+    private static MinioClient getMinioClient() {
+        Map<String, String> env = getEnv();
+        String host = env.getOrDefault("ZENEBRIS_MINIO_HOST", "localhost");
+        String key = env.get("ZENEBRIS_MINIO_KEY");
+        String secret = env.get("ZENEBRIS_MINIO_SECRET");
+
+        if (secret == null)
+            throw new IllegalStateException("Environment ZENEBRIS_MINIO_SECRET must be defined.");
+
+        if (key == null)
+            throw new IllegalStateException("Environment ZENEBRIS_MINIO_KEY must be defined.");
+
+        String endpoint = "http://" + host;
+        logger.debug("Connecting minio to " + endpoint);
+        return MinioClient.builder()
+                .endpoint(endpoint)
+                .credentials(key, secret)
+                .build();
+    }
+
+    private static Map<String, String> getEnv() {
+        return System.getenv();
     }
 }
