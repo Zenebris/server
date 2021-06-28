@@ -2,8 +2,6 @@ package net.zenebris.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import io.jooby.Jooby;
 import io.jooby.ServerOptions;
 import io.jooby.json.JacksonModule;
@@ -12,22 +10,25 @@ import io.minio.MinioClient;
 import net.zenebris.server.controller.SocketController;
 import net.zenebris.server.controller.UserController;
 import net.zenebris.server.middleware.AuthMiddleware;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
 import java.util.Map;
 
 public class App extends Jooby {
     private static final Logger logger = LoggerFactory.getLogger(App.class);
-    private final DataSource dataSource;
+    private final SessionFactory dataSource;
     private final RedisClient redisClient;
     private final MinioClient minioClient;
 
-    public App(DataSource dataSource, RedisClient redisClient, MinioClient minioClient) {
+    public App(SessionFactory dataSource, RedisClient redisClient, MinioClient minioClient) {
         this.dataSource = dataSource;
         this.redisClient = redisClient;
         this.minioClient = minioClient;
+
         setServerOptions(new ServerOptions()
                 .setHttp2(true)
                 .setCompressionLevel(5)
@@ -59,7 +60,7 @@ public class App extends Jooby {
         return new App(getSqlDatasource(), getRedisClient(), getMinioClient());
     }
 
-    private static DataSource getSqlDatasource() {
+    private static SessionFactory getSqlDatasource() {
         Map<String, String> env = getEnv();
         String host = env.getOrDefault("ZENEBRIS_SQL_HOST", "localhost");
         String db = env.getOrDefault("ZENEBRIS_SQL_DATABASE", "zenebris");
@@ -68,11 +69,15 @@ public class App extends Jooby {
         if (password == null)
             throw new IllegalStateException("Environment ZENEBRIS_SQL_PASSWORD must be defined.");
 
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:postgresql://" + host + "/" + db);
-        config.setUsername(user);
-        config.setPassword(password);
-        return new HikariDataSource(config);
+        Configuration configuration = new Configuration();
+        configuration.setProperty("hibernate.connection.provider", "com.zaxxer.hikari.hibernate.HikariConnectionProvider");
+        configuration.setProperty(Environment.USER, user);
+        configuration.setProperty(Environment.PASS, password);
+        configuration.setProperty(Environment.URL, "jdbc:postgresql://" + host + "/" + db);
+        configuration.setProperty(Environment.HBM2DDL_AUTO, "create-only");
+
+        return configuration
+                .buildSessionFactory();
     }
 
     private static RedisClient getRedisClient() {

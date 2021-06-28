@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.postgresql:postgresql:42.2.22'
 
     // SQL connection pool
-    implementation "com.zaxxer:HikariCP:4.0.3"
+    implementation 'org.hibernate:hibernate-hikaricp:5.5.3.Final'
 
     // Minio client for object storage
     implementation 'io.minio:minio:8.2.2'
