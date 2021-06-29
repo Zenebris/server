@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <variable name="ZENEBRIS_LOG_LEVEL" value="${ZENEBRIS_LOG_LEVEL:-INFO}" />
+    <appender name="COLOR" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date [%thread] %highlight(%level) %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="${ZENEBRIS_LOG_LEVEL}">
+        <appender-ref ref="COLOR"/>
+    </root>
+</configuration>
