@@ -1,24 +1,23 @@
-version: "2"
+# WARNING! This file is only for development purposes.
+# It should NEVER be used in a prod environment.
+version: "3.7"
 
 services:
-  postgre-db:
-    image: postgres
+  postgres:
     volumes:
       - /zenebris/postgres/data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: MNe&bRu!%d6HmLfAS7Aj
+      POSTGRES_PASSWORD: postgres123
       POSTGRES_USER: ZenebrisPostgres
-      POSTGRES_DB: Zenebris
+      POSTGRES_DB: zenebris
     ports:
       - 5432:5432
 
   redis:
-    image: redis
     ports:
       - 6379:6379
 
   minio:
-    image: minio/minio
     ports:
       - 9000:9000
     command: server /data

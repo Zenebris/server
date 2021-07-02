@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: postgres:13.3-alpine
+
+  redis:
+    image: redis:6.2.4-alpine
+
+  minio:
+    image: minio/minio
